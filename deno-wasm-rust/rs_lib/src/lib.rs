@@ -23,8 +23,6 @@ pub async fn wget() -> Result<JsValue, JsValue> {
   assert!(resp_value.is_object());
   let resp: Response = resp_value.dyn_into::<Response>().unwrap();
 
-  console::log_1(&"response".into());
-
   console::log_2(&"Status:".into(), &JsValue::from(resp.status()));
   // log(format!("Status: {} {}", resp.))
 
