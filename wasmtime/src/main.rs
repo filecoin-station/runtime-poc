@@ -1,7 +1,12 @@
 use std::env;
 
-use wasmtime::*;
-use wasmtime_wasi::{sync::WasiCtxBuilder, WasiCtx};
+use wasmtime::{Config, Engine, Linker, Module, Store};
+
+// use wasmtime_wasi::{sync::WasiCtxBuilder, WasiCtx};// For this example we want to use the async version of wasmtime_wasi.
+
+// Notably, this version of wasi uses a scheduler that will async yield
+// when sleeping in `poll_oneoff`.
+use wasmtime_wasi::{tokio::WasiCtxBuilder, WasiCtx};
 
 struct MyState {
   wasi: WasiCtx,
@@ -9,7 +14,8 @@ struct MyState {
   // message: String,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let exe_path = env::current_exe()?;
   println!("exe path: {}", exe_path.display());
   let lib_wasm_file = exe_path
@@ -21,12 +27,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap()
     .join("lib/target/wasm32-wasi/debug/rs_lib.wasm");
 
+  let mut config = Config::new();
+  // We need this engine's `Store`s to be async
+  config.async_support(true);
+
   // First the wasm module needs to be compiled. This is done with a global
   // "compilation environment" within an `Engine`. Note that engines can be
   // further configured through `Config` if desired instead of using the
   // default like this is here.
   println!("Setting up WASI engine...");
-  let engine = Engine::default();
+  let engine = Engine::new(&config)?;
 
   // Define the WASI functions globally on the `Config`.
   let mut linker = Linker::new(&engine);
@@ -52,7 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   println!("Compiling module...");
   let module = Module::from_file(&engine, lib_wasm_file)?;
 
-  linker.module(&mut store, "", &module)?;
+  // linker.module(&mut store, "", &module)?;
 
   /*
   // Our wasm module we'll be instantiating requires one imported function.
@@ -74,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // let imports = [hello_func.into()];
   // let instance =
   //   Instance::new(&mut store, &module, /* &imports */ &[]).unwrap();
-  let instance = linker.instantiate(&mut store, &module)?;
+  let instance = linker.instantiate_async(&mut store, &module).await?;
 
   // Next we poke around a bit to extract the `wget` function from the module.
   println!("Extracting export...");
@@ -82,7 +92,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   // And last but not least we can call it!
   println!("Calling export...");
-  wget.call(&mut store, ())?;
+  wget.call_async(&mut store, ()).await?;
 
   println!("Done.");
 
