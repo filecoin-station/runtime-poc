@@ -10,7 +10,7 @@ Exploration of different JS/TS/WASM runtimes
 
    ```shell
    $ deno run --allow-net --allow-write --allow-read deno-typescript/demo.ts
-   ``
+   ```
 
 ## Deno + WASM + Rust
 
@@ -21,12 +21,37 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 2. Build the demo
 
    ```shell
-   $ (cd demo-wasm-rust && deno task wasmbuild)
+   $ (cd deno-wasm-rust && deno task wasmbuild)
    ```
 
 3. Run the demo
 
   ```shell
-  $ deno run --allow-read --allow-write --allow-net demo.ts
+  $ deno run --allow-read --allow-write --allow-net deno-wasm-rust/demo.ts
   ```
 
+## Wasmtime + Rust
+
+0. Install cargo-wasi
+
+   ```shell
+   $ cargo install cargo-wasi
+   ```
+
+1. Build the WASM module
+
+   ```shell
+   $ (cd wasmtime/lib && cargo wasi build)
+   ```
+
+2. Build the demo runner
+
+   ```shell
+   $(cd wasmtime && cargo build)
+   ```
+
+3. Run the demo
+
+   ```shell
+   $ ./wasmtime/target/debug/demo
+   ```
