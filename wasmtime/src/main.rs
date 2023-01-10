@@ -9,8 +9,8 @@ struct MyState {
   // message: String,
 }
 
-fn main() {
-  let exe_path = env::current_exe().unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let exe_path = env::current_exe()?;
   println!("exe path: {}", exe_path.display());
   let lib_wasm_file = exe_path
     .parent()
@@ -32,8 +32,7 @@ fn main() {
   let mut linker = Linker::new(&engine);
   wasmtime_wasi::add_to_linker(&mut linker, |state: &mut MyState| {
     &mut state.wasi
-  })
-  .unwrap();
+  })?;
 
   // Create a WASI context and put it in a Store; all instances in the store
   // share this context. `WasiCtxBuilder` provides a number of ways to
@@ -51,9 +50,9 @@ fn main() {
   );
 
   println!("Compiling module...");
-  let module = Module::from_file(&engine, lib_wasm_file).unwrap();
+  let module = Module::from_file(&engine, lib_wasm_file)?;
 
-  linker.module(&mut store, "", &module).unwrap();
+  linker.module(&mut store, "", &module)?;
 
   /*
   // Our wasm module we'll be instantiating requires one imported function.
@@ -75,17 +74,17 @@ fn main() {
   // let imports = [hello_func.into()];
   // let instance =
   //   Instance::new(&mut store, &module, /* &imports */ &[]).unwrap();
-  let instance = linker.instantiate(&mut store, &module).unwrap();
+  let instance = linker.instantiate(&mut store, &module)?;
 
   // Next we poke around a bit to extract the `wget` function from the module.
   println!("Extracting export...");
-  let wget = instance
-    .get_typed_func::<(), ()>(&mut store, "wget")
-    .unwrap();
+  let wget = instance.get_typed_func::<(), ()>(&mut store, "wget")?;
 
   // And last but not least we can call it!
   println!("Calling export...");
-  wget.call(&mut store, ()).unwrap();
+  wget.call(&mut store, ())?;
 
   println!("Done.");
+
+  Ok(())
 }
