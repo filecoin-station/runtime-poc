@@ -6,7 +6,7 @@ use wasmtime::{Config, Engine, Linker, Module, Store};
 
 // Notably, this version of wasi uses a scheduler that will async yield
 // when sleeping in `poll_oneoff`.
-use wasmtime_wasi::{tokio::WasiCtxBuilder, WasiCtx};
+use wasmtime_wasi::{ambient_authority, tokio::WasiCtxBuilder, Dir, WasiCtx};
 
 struct MyState {
   wasi: WasiCtx,
@@ -48,6 +48,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   // share this context. `WasiCtxBuilder` provides a number of ways to
   // configure what the target program will have access to.
   let wasi = WasiCtxBuilder::new()
+    // IMPORTANT! Here we allow the WASM module to access the current working directory
+    .preopened_dir(Dir::open_ambient_dir(".", ambient_authority())?, ".")?
     .inherit_stdio()
     // .inherit_args()?
     .build();
