@@ -11,3 +11,7 @@ codegen-units = 1
 incremental = true
 lto = true
 opt-level = "z"
+
+[dependencies]
+http = "0.2.8"
+wasi-experimental-http = "0.10.0"

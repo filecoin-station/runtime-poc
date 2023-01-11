@@ -1,5 +1,6 @@
 use std::env;
 
+use wasi_experimental_http_wasmtime::{HttpCtx, HttpState};
 use wasmtime::{Config, Engine, Linker, Module, Store};
 
 // use wasmtime_wasi::{sync::WasiCtxBuilder, WasiCtx};// For this example we want to use the async version of wasmtime_wasi.
@@ -10,6 +11,7 @@ use wasmtime_wasi::{ambient_authority, tokio::WasiCtxBuilder, Dir, WasiCtx};
 
 struct MyState {
   wasi: WasiCtx,
+  http: HttpCtx,
   // Here we can define our custom state
   // message: String,
 }
@@ -38,11 +40,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   println!("Setting up WASI engine...");
   let engine = Engine::new(&config)?;
 
-  // Define the WASI functions globally on the `Config`.
+  // Add the WASI functions to the linker
   let mut linker = Linker::new(&engine);
   wasmtime_wasi::add_to_linker(&mut linker, |state: &mut MyState| {
     &mut state.wasi
   })?;
+
+  // Link the experimental HTTP support
+  let wasm_http = HttpState::new()?;
+  wasm_http.add_to_linker(&mut linker, |state: &MyState| state.http.clone())?;
 
   // Create a WASI context and put it in a Store; all instances in the store
   // share this context. `WasiCtxBuilder` provides a number of ways to
@@ -53,10 +59,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .inherit_stdio()
     // .inherit_args()?
     .build();
+
+  // Create a context for the experimental HTTP client
+  let allowed_hosts = Some(vec!["https://www.filstation.app".to_string()]);
+  let max_concurrent_requests = Some(5);
+  let http = HttpCtx {
+    allowed_hosts,
+    max_concurrent_requests,
+  };
+
   let mut store = Store::new(
     &engine,
     MyState {
       wasi,
+      http,
       // here we can initialize our custom state
     },
   );
@@ -90,7 +106,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   // Next we poke around a bit to extract the `wget` function from the module.
   println!("Extracting export...");
-  let wget = instance.get_typed_func::<(), ()>(&mut store, "wget")?;
+  let wget = instance
+    .get_typed_func::<(), (), &mut Store<MyState>>(&mut store, "wget")?;
 
   // And last but not least we can call it!
   println!("Calling export...");
