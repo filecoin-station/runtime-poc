@@ -27,7 +27,7 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 3. Run the demo
 
   ```shell
-  $ deno run --allow-read --allow-write --allow-net deno-wasm-rust/demo.ts
+  $ (cd deno-wasm-rust && deno task demo)
   ```
 
 ## Wasmtime + Rust

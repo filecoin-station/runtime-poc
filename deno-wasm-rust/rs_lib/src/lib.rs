@@ -1,13 +1,11 @@
 use futures_util::StreamExt;
-use std::fs::File;
-use std::io::Write;
 
-use js_sys::Uint8Array;
+use js_sys::{Function, Reflect};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::Response;
 
-use wasm_streams::ReadableStream;
+use wasm_streams::{ReadableStream, WritableStream};
 
 #[wasm_bindgen]
 extern "C" {
@@ -15,6 +13,9 @@ extern "C" {
   // `log(..)`
   #[wasm_bindgen(js_namespace = console)]
   pub fn log(s: &str);
+
+  #[wasm_bindgen(js_namespace = Deno, js_name = create)]
+  pub fn create_file(s: &str) -> js_sys::Promise;
 }
 
 #[wasm_bindgen]
@@ -46,29 +47,40 @@ pub async fn wget() -> Result<JsValue, JsValue> {
   // Deno code: import.meta.resolve('./station.html'))
 
   console::log_1(&"creating output file".into());
-  let result = File::create("rusty-station.html");
-  /* ^^^ that does not work in Deno :(
-    creating output file
-    error: Uncaught (in promise) "operation not supported on this platform"
-  */
-  if let Err(err) = result {
-    return Err(err.to_string().into());
-  }
+  let fs_file = JsFuture::from(create_file(&"rusty-station.html")).await?;
+  assert!(fs_file.is_object());
+  // Call `file.writable` via Reflection.
+  // In the real runtime, we would describe Deno API via wasm-bindgen interfaces,
+  // cast fs_file from JsObject to Deno.FsFile, and then use Rust to get the property
+  let raw_writable = Reflect::get(&fs_file, &"writable".into()).unwrap_throw();
+  let mut writable =
+    WritableStream::from_raw(raw_writable.dyn_into().unwrap_throw());
+  // Call writable.get_writer()
+  let mut writer = writable.get_writer();
+  // Alternatively, we could call e.g. `writable.into_sync` to obtain futures::sink::Sink
 
-  let mut file = result.unwrap();
-
-  // Consume the stream, writing each individual chunk to the file
+  // Consume the response body stream, writing each individual chunk to the file
   while let Some(Ok(chunk)) = stream.next().await {
-    console::log_1(&chunk);
-    let u8arr = chunk.dyn_into::<Uint8Array>().unwrap_throw();
     console::log_2(
       &"writing %s bytes".into(),
-      &JsValue::from(u8arr.byte_length()),
+      &Reflect::get(&chunk, &"byteLength".into()).unwrap_throw(),
     );
-    // FIXME: can we avoid copying the chunk data into a new u8 vector? Maybe using a BYOB reader?
-    let data = u8arr.to_vec();
-    file.write_all(&data).unwrap_throw();
+    writer.write(chunk).await?;
   }
+
+  // Manually close the file.
+  // Note that our PoC is not error-safe - if any of the code above throws,
+  // then we never close the file
+  //
+  // In the real runtime, we would describe Deno API via wasm-bindgen interfaces,
+  // and find a way how to call file.close() automatically when the handle leaves the scope
+  console::log_1(&"closing the file".into());
+  Reflect::get(&fs_file, &"close".into())
+    .unwrap_throw()
+    .dyn_into::<Function>()
+    .unwrap_throw()
+    .call0(&fs_file)
+    .unwrap_throw();
 
   Ok(JsValue::UNDEFINED)
 }
