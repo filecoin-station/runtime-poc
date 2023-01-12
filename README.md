@@ -55,3 +55,29 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
    ```shell
    $ ./wasmtime/target/debug/demo
    ```
+
+## Wasmer + Rust
+
+0. Install cargo-wasi
+
+   ```shell
+   $ cargo install cargo-wasi
+   ```
+
+1.  Build the WASM module
+
+   ```shell
+   $ (cd wasmer/lib && cargo wasi build)
+   ```
+
+2. Build the demo runner
+
+   ```shell
+   $ (cd wasmer && cargo build)
+   ```
+
+3. Run the demo
+
+   ```shell
+   $ ./wasmer/target/debug/demo
+   ```
