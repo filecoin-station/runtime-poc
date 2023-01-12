@@ -25,6 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // Create the `WasiEnv`
   println!("Setting up WASI runtime");
   let wasi_env = WasiState::new("demo")
+    // .setup_fs(setup_fs_fn)
     // .args(&["world"])
     // .env("KEY", "Value")
     .finalize(&mut store)?;
@@ -61,3 +62,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   Ok(())
 }
+
+//

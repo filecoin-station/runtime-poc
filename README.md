@@ -26,9 +26,9 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 
 3. Run the demo
 
-  ```shell
-  $ (cd deno-wasm-rust && deno task demo)
-  ```
+   ```shell
+   $ (cd deno-wasm-rust && deno task demo)
+   ```
 
 ## Wasmtime + Rust
 
@@ -47,7 +47,7 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 2. Build the demo runner
 
    ```shell
-   $(cd wasmtime && cargo build)
+   $ (cd wasmtime && cargo build)
    ```
 
 3. Run the demo
@@ -64,7 +64,7 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
    $ cargo install cargo-wasi
    ```
 
-1.  Build the WASM module
+1. Build the WASM module
 
    ```shell
    $ (cd wasmer/lib && cargo wasi build)
