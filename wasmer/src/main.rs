@@ -12,15 +12,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap()
     .parent()
     .unwrap()
-    .parent()
-    .unwrap()
-    .join("lib/target/wasm32-wasi/debug/rs_lib.wasm");
+    .join("wasm32-wasi/debug/rs_lib.wasm");
 
   // Setup the engine
   let mut store = Store::default();
 
   // Load our WASM module
-  let module = Module::from_file(&store, lib_wasm_file)?;
+  let file_str = lib_wasm_file.display().to_string();
+  let module = Module::from_file(&store, lib_wasm_file)
+    .expect(&format!("load WASM module from {}", file_str));
 
   // Create the `WasiEnv`
   println!("Setting up WASI runtime");

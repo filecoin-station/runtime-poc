@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 wasmer = "3.1.0"
 wasmer-wasi = "3.1.0"
+
+[workspace]
+members = [
+    "lib",
+]
