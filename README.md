@@ -81,3 +81,24 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
    ```shell
    $ ./wasmer/target/debug/demo
    ```
+
+## Wasmtime + Rust + async host functions
+
+1. Build the WASM module
+
+   ```shell
+   $ (cd wasmtime-async-host/lib && cargo build --target=wasm32-unknown-unknown)
+   ```
+
+2. Build the demo runner
+
+   ```shell
+   $ (cd wasmtime-async-host && cargo build)
+   ```
+
+3. Run the demo
+
+   ```shell
+   $ ./wasmtime-async-host/target/debug/demo
+   ```
+
