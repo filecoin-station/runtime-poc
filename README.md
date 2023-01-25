@@ -102,3 +102,8 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
    $ ./wasmtime-async-host/target/debug/demo
    ```
 
+## v8 + JavaScript
+
+```shell
+$ (cd v8-js && cargo run)
+```
