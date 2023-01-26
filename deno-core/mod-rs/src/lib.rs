@@ -13,8 +13,7 @@ extern "C" {
 
 // DEMO MODULE
 
-// Called when the wasm module is instantiated
-#[wasm_bindgen(start)]
+#[wasm_bindgen()]
 pub async fn run() -> Result<(), JsValue> {
   zinnia_log("Good night...");
   zinnia_sleep(1000).await;
