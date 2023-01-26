@@ -50,28 +50,13 @@ async fn main() {
     ..Default::default()
   });
 
-  // Now we see how to invoke the op we just defined. The runtime automatically
-  // contains a Deno.core object with several functions for interacting with it.
-  // You can find its definition in core.js.
+  println!("== Running the JavaScript demo ==");
 
   runtime
-    .execute_script(
-      "demo-module.js",
-      r#"
-  Deno.core.initializeAsyncOps();
-
-  // Built-in Deno API
-  Deno.core.print('Hello via Deno logger\n')
-
-  // Our custom API would be wrapped by Zinnia SDK for JS/TS
-  Deno.core.ops.op_log('Good night...')
-  Deno.core.ops.op_sleep(1000).then(
-    _ => Deno.core.ops.op_log('Good morning!'),
-    err => Deno.core.print(err.stack)
-  )
-  "#,
-    )
+    .execute_script("demo-module.js", include_str!("../mod-js/demo-module.js"))
     .unwrap();
 
   runtime.run_event_loop(false).await.unwrap();
+
+  println!("== DONE ==");
 }
