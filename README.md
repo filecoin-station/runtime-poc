@@ -108,9 +108,19 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 $ (cd v8-js && cargo run)
 ```
 
-## deno_core
+## Deno core
 
-```shell
-$ (cd deno-core && cargo run)
-```
+1. Install Deno (see [Installation docs](https://deno.land/manual@v1.29.2/getting_started/installation))
+
+2. Build the demo module
+
+   ```shell
+   $ (cd deno-core && deno task wasmbuild)
+   ```
+
+3. Build & run the demo
+
+   ```shell
+   $ (cd deno-core && cargo run)
+   ```
 
