@@ -107,3 +107,10 @@ See https://deno.com/blog/wasmbuild and https://deno.land/x/wasmbuild@0.10.3
 ```shell
 $ (cd v8-js && cargo run)
 ```
+
+## deno_core
+
+```shell
+$ (cd deno-core && cargo run)
+```
+
