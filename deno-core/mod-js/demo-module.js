@@ -16,12 +16,6 @@ const Zinnia = {
 Deno.core.print('Hello via Deno logger\n')
 
 // Using Zinnia API
-
 Zinnia.log('Good night...')
-// Zinnia.sleep(1000).then(
-//   _ => Zinnia.log('Good morning!'),
-//   err => Deno.core.print(err.stack)
-// )
-
 await Zinnia.sleep(1000);
 Zinnia.log('Good morning!')
